@@ -297,7 +297,7 @@ export default function Influencers() {
       price_per_min_chat: "",
       price_per_min_audio: "",
       price_per_min_video: "",
-      status: "",
+      status: "pending",
       image: "",
       verification_video: "",
     });
@@ -444,6 +444,8 @@ export default function Influencers() {
       const normalizedStatus =
         rawStatus === "Approved" || rawStatus === "approved"
           ? "approved"
+          : rawStatus === "Pending" || rawStatus === "pending"
+            ? "pending"
           : rawStatus === "Reject" || rawStatus === "Rejected" || rawStatus === "rejected"
             ? "rejected"
             : rawStatus;
@@ -539,7 +541,9 @@ export default function Influencers() {
       label: "Status",
       name: "status",
       type: "select",
+      required: false,
       options: [
+        { value: "pending", label: "Pending" },
         { value: "approved", label: "Approved" },
         { value: "rejected", label: "Reject" },
       ],
@@ -590,10 +594,13 @@ export default function Influencers() {
         const currentStatus = String(row?.status || "").trim();
         const isApproved = currentStatus === "approved";
         const isRejected = currentStatus === "rejected";
+        const isPending = currentStatus === "pending";
         const colorClass = isApproved
           ? "bg-green-50 text-green-700 border-green-300"
           : isRejected
             ? "bg-red-50 text-red-700 border-red-300"
+            : isPending
+              ? "bg-yellow-50 text-yellow-800 border-yellow-300"
             : "bg-gray-50 text-gray-700 border-gray-300";
 
         return (
@@ -605,6 +612,7 @@ export default function Influencers() {
               style={{ appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
             >
               <option value="">--</option>
+              <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Reject</option>
             </select>
