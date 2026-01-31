@@ -350,6 +350,28 @@ export default function Influencers() {
     await getServicesData("influencers");
   };
 
+  const handleInlineStatusChange = async (row, nextStatusRaw) => {
+    const influencerId = String(row?.influencer_id || "").trim();
+    const nextStatus = String(nextStatusRaw || "").trim();
+    if (!influencerId || !nextStatus) return;
+
+    try {
+      const fd = new FormData();
+      fd.append("status", nextStatus);
+
+      try {
+        await patchData(`/influencers/pass/${influencerId}/`, fd, "Influencer");
+      } catch (e1) {
+        await patchData(`/influencers/${influencerId}/`, fd, "Influencer");
+      }
+
+      await getServicesData("influencers");
+    } catch (e) {
+      console.error("Inline status update failed:", e);
+      alert("Failed: " + (e?.message || "Unable to update status"));
+    }
+  };
+
   const parseLanguages = (text) => {
     if (!text) return [];
     if (Array.isArray(text)) return text;
@@ -560,6 +582,49 @@ export default function Influencers() {
         Array.isArray(row.categories) && row.categories.length
           ? row.categories.map((c) => c?.name).filter(Boolean).join(", ")
           : "--",
+    },
+    {
+      label: "Status",
+      key: "status",
+      render: (row) => {
+        const currentStatus = String(row?.status || "").trim();
+        const isApproved = currentStatus === "approved";
+        const isRejected = currentStatus === "rejected";
+        const colorClass = isApproved
+          ? "bg-green-50 text-green-700 border-green-300"
+          : isRejected
+            ? "bg-red-50 text-red-700 border-red-300"
+            : "bg-gray-50 text-gray-700 border-gray-300";
+
+        return (
+          <div className="relative inline-block">
+            <select
+              value={currentStatus}
+              onChange={(e) => handleInlineStatusChange(row, e.target.value)}
+              className={`text-xs px-3 py-2 pr-8 border rounded-md outline-none ${colorClass}`}
+              style={{ appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
+            >
+              <option value="">--</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Reject</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4 text-gray-400"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+        );
+      },
     },
     {
       label: "Actions",
