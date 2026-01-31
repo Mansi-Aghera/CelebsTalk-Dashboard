@@ -33,6 +33,7 @@ export const AppProvider = ({ children }) => {
 
   const inflightFetchRef = useRef({});
   const lastFetchAtRef = useRef({});
+  const preferredAuthSchemeRef = useRef(null);
 
   const getAccessToken = () => {
     return (
@@ -41,6 +42,15 @@ export const AppProvider = ({ children }) => {
       localStorage.getItem("token") ||
       ""
     );
+  };
+
+  const getPreferredAuthScheme = () => {
+    if (preferredAuthSchemeRef.current) return preferredAuthSchemeRef.current;
+    const token = getAccessToken();
+    if (!token) return "Bearer";
+    const looksLikeJwt = token.split(".").length === 3;
+    preferredAuthSchemeRef.current = looksLikeJwt ? "Bearer" : "Token";
+    return preferredAuthSchemeRef.current;
   };
 
   const setAuthHeader = (headers, scheme) => {
@@ -74,6 +84,10 @@ export const AppProvider = ({ children }) => {
         credentials: "include",
       });
 
+      if (res.ok) {
+        preferredAuthSchemeRef.current = scheme;
+      }
+
       if ((res.status === 401 || res.status === 403) && allowRetry && getAccessToken()) {
         const altScheme = scheme === "Bearer" ? "Token" : "Bearer";
         return doFetch(altScheme, false);
@@ -82,7 +96,8 @@ export const AppProvider = ({ children }) => {
       return res;
     };
 
-    const res = await doFetch("Bearer", true);
+    const preferred = getPreferredAuthScheme();
+    const res = await doFetch(preferred, true);
 
     let data = {};
     let rawText = "";
@@ -156,6 +171,10 @@ export const AppProvider = ({ children }) => {
         credentials: "include",
       });
 
+      if (res.ok) {
+        preferredAuthSchemeRef.current = scheme;
+      }
+
       if ((res.status === 401 || res.status === 403) && allowRetry && getAccessToken()) {
         const altScheme = scheme === "Bearer" ? "Token" : "Bearer";
         return doFetch(altScheme, false);
@@ -164,7 +183,8 @@ export const AppProvider = ({ children }) => {
       return res;
     };
 
-    const res = await doFetch("Bearer", true);
+    const preferred = getPreferredAuthScheme();
+    const res = await doFetch(preferred, true);
 
     if (!res.ok) {
       let data = {};
@@ -212,6 +232,10 @@ export const AppProvider = ({ children }) => {
         credentials: "include",
       });
 
+      if (res.ok) {
+        preferredAuthSchemeRef.current = scheme;
+      }
+
       if ((res.status === 401 || res.status === 403) && allowRetry && getAccessToken()) {
         const altScheme = scheme === "Bearer" ? "Token" : "Bearer";
         return doFetch(altScheme, false);
@@ -220,7 +244,8 @@ export const AppProvider = ({ children }) => {
       return res;
     };
 
-    const res = await doFetch("Bearer", true);
+    const preferred = getPreferredAuthScheme();
+    const res = await doFetch(preferred, true);
 
     if (!res.ok) {
       let data = {};

@@ -5,6 +5,7 @@ import DashboardLayout from "../Components/DashboardLayout.jsx";
 import Home from "../Pages/home.jsx";
 import Influencers from "../Pages/influencers.jsx";
 import Withdrawals from "../Pages/withdrawals.jsx";
+
 import Banners from "../Pages/banner.jsx";
 import Categories from "../Pages/category.jsx";
 import Users from "../Pages/users.jsx";
@@ -14,7 +15,6 @@ import SponsoredContent from "../Pages/sponsoredContent.jsx";
 import Reviews from "../Pages/review.jsx";
 import FaqPage from "../Pages/faq.jsx";
 import Services from "../Pages/services.jsx";
-
 import MyProfile from "../Pages/myProfile.jsx";
 import Expertise from "../Pages/expertise.jsx";
 
@@ -33,6 +33,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="home" replace /> },
           { path: "home", element: <Home /> },
           { path: "influencers", element: <Influencers /> },
+       
           { path: "withdrawals", element: <Withdrawals /> },
           { path: "users", element: <Users /> },
           { path: "user-detail/:id", element: <UserDetail /> },

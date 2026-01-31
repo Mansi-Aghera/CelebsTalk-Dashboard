@@ -258,7 +258,7 @@ export default function Withdrawals() {
 
       const txPayload = {
         influencer_data: influencerKey,
-        transaction_type: "debit",
+        transaction_type: "Credited",
         payment_method: methodLabel || "Bank Transfer",
         payment_purpose: "Withdrawal",
         transaction_title: "Withdrawal Request",

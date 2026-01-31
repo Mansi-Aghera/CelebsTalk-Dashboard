@@ -5,7 +5,7 @@ import Form from "../Components/Form.jsx";
 import Modal from "../Components/Modal.jsx";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useAppContext } from "../Central_Store/app_context.jsx";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export default function Categories() {
   const { fetchedData, deleteData, postData, patchData, getServicesData } = useAppContext();
@@ -15,6 +15,7 @@ export default function Categories() {
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
+  const warnedMissingExpertiseRef = useRef(new Set());
 
   const pageSize = 10;
   const STATIC_URL = "https://celebstalks.pythonanywhere.com";
@@ -39,6 +40,37 @@ export default function Categories() {
     await getServicesData("categories");
   };
 
+  const handleToggleStatus = async (row) => {
+    try {
+      const expertises = Array.isArray(fetchedData.expertise) ? fetchedData.expertise : [];
+      const hasExpertise = expertises.some((e) => {
+        const catId =
+          e?.category_data != null
+            ? String(typeof e.category_data === "object" ? e.category_data.id : e.category_data)
+            : "";
+        return catId && catId === String(row?.id);
+      });
+
+      if (!hasExpertise) {
+        const id = String(row?.id || "");
+        if (id && !warnedMissingExpertiseRef.current.has(id)) {
+          warnedMissingExpertiseRef.current.add(id);
+          alert("Add first expertise for this category.");
+        }
+        return;
+      }
+
+      const fd = new FormData();
+      if (row?.name != null) fd.append("name", String(row.name));
+      fd.append("status", !row?.status);
+      await patchData(`/category/${row.id}/`, fd, "Category");
+      await getServicesData("categories");
+    } catch (error) {
+      console.error("Toggle status error:", error);
+      alert("Failed: " + (error.message || "Unknown error"));
+    }
+  };
+
   const handleAdd = () => {
     setEditData(null);
     setOpen(true);
@@ -48,7 +80,6 @@ export default function Categories() {
     setEditData({
       id: row.id,
       name: row.name || "",
-      status: row.status ? "Active" : "Inactive",
       currentImage: row.image ? STATIC_URL + row.image : null,
     });
     setOpen(true);
@@ -57,7 +88,9 @@ export default function Categories() {
   const handleSubmit = async (formValues) => {
     const fd = new FormData();
     fd.append("name", (formValues.name || "").trim());
-    fd.append("status", formValues.status === "Active");
+    if (!editData?.id) {
+      fd.append("status", false);
+    }
 
     if (formValues.image && formValues.image instanceof File) {
       fd.append("image", formValues.image);
@@ -80,7 +113,6 @@ export default function Categories() {
 
   const fields = [
     { label: "Name", name: "name", type: "text", required: true },
-    { label: "Status", name: "status", type: "select", options: ["Active", "Inactive"], required: true },
     { label: "Category Image", name: "image", type: "image" },
   ];
 
@@ -107,6 +139,12 @@ export default function Categories() {
       key: "status",
       render: (row) => (
         <span
+          role="button"
+          tabIndex={0}
+          onClick={() => handleToggleStatus(row)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleToggleStatus(row);
+          }}
           className={`px-3 py-1 rounded-full text-xs font-medium ${
             row.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
           }`}

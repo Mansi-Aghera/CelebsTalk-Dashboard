@@ -132,25 +132,43 @@ export default function Form({
             )}
 
             {/* Select */}
-            {field.type === "select" && (
-              <select
-                name={field.name}
-                value={formData[field.name] || ""}
-                onChange={handleChange}
-                required={field.required}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
-              >
-                <option value="">-- Choose --</option>
-                {field.options?.map((opt) => {
-                  const value = typeof opt === "object" && opt !== null ? opt.value : opt;
-                  const label = typeof opt === "object" && opt !== null ? opt.label : opt;
-                  return (
-                    <option key={String(value)} value={value}>
-                      {label}
-                    </option>
-                  );
-                })}
-              </select>
+            {(field.type === "select" || Array.isArray(field.options)) && (
+              <div className="relative">
+                <select
+                  name={field.name}
+                  value={formData[field.name] || ""}
+                  onChange={handleChange}
+                  required={field.required}
+                  style={{ appearance: "none", WebkitAppearance: "none", MozAppearance: "none" }}
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                >
+                  <option value="">-- Choose --</option>
+                  {field.options?.map((opt) => {
+                    const value = typeof opt === "object" && opt !== null ? opt.value : opt;
+                    const label = typeof opt === "object" && opt !== null ? opt.label : opt;
+
+                    return (
+                      <option key={String(value)} value={value}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="h-5 w-5 text-gray-400"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.24 4.5a.75.75 0 0 1-1.08 0l-4.24-4.5a.75.75 0 0 1 .02-1.06Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
             )}
 
             {/* Image Upload */}

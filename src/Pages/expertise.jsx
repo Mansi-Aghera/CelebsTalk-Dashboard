@@ -97,6 +97,25 @@ export default function Expertise() {
       fd.append("image", formValues.image);
     }
 
+    const selectedCategoryId = String(formValues.category_data || "").trim();
+
+    const activateSelectedCategory = async () => {
+      if (!selectedCategoryId) return;
+      const existing = (Array.isArray(fetchedData.categories) ? fetchedData.categories : []).find(
+        (c) => String(c.id) === selectedCategoryId
+      );
+
+      const catFd = new FormData();
+      if (existing?.name) catFd.append("name", String(existing.name));
+      catFd.append("status", true);
+
+      try {
+        await patchData(`/category/${selectedCategoryId}/`, catFd, "Category");
+      } catch (e) {
+        console.error("Failed to activate category:", e);
+      }
+    };
+
     try {
       if (editData?.id) {
         try {
@@ -116,7 +135,10 @@ export default function Expertise() {
         await postData("/expertise/", fd, "Expertise");
       }
 
+      await activateSelectedCategory();
+
       await getServicesData("expertise");
+      await getServicesData("categories");
       setOpen(false);
       setEditData(null);
     } catch (error) {

@@ -342,7 +342,11 @@ export default function Influencers() {
     if (!influencerId) return;
 
     if (!window.confirm("Delete this influencer?")) return;
-    await deleteData(`/influencers/${influencerId}/`);
+    try {
+      await deleteData(`/influencers/pass/${influencerId}/`);
+    } catch (e1) {
+      await deleteData(`/influencers/${influencerId}/`);
+    }
     await getServicesData("influencers");
   };
 
@@ -414,7 +418,14 @@ export default function Influencers() {
     }
 
     if (formValues.status !== "") {
-      fd.append("status", String(formValues.status));
+      const rawStatus = String(formValues.status).trim();
+      const normalizedStatus =
+        rawStatus === "Approved" || rawStatus === "approved"
+          ? "approved"
+          : rawStatus === "Reject" || rawStatus === "Rejected" || rawStatus === "rejected"
+            ? "rejected"
+            : rawStatus;
+      fd.append("status", normalizedStatus);
     }
 
     if (formValues.image && formValues.image instanceof File) {
@@ -432,55 +443,33 @@ export default function Influencers() {
     try {
       const influencerId = String(formValues.influencer_id || "").trim();
 
-      const hasFileUpload =
-        (formValues.image && formValues.image instanceof File) ||
-        (formValues.verification_video && formValues.verification_video instanceof File);
-
-      const categoryId = String(formValues.category_id || "").trim();
-      const languagesArr = parseLanguages(formValues.languages);
-      const socialLinksObj = safeParseJson(formValues.social_links);
-
-      const jsonPayload = {
-        influencer_id: influencerId,
-        full_name: String(formValues.full_name || "").trim(),
-        category_id: categoryId || undefined,
-        categories: categoryId ? [Number(categoryId)] : undefined,
-        dob: formValues.dob || undefined,
-        email: formValues.email ? String(formValues.email).trim() : undefined,
-        mobile: formValues.mobile ? String(formValues.mobile).trim() : undefined,
-        gender: formValues.gender ? String(formValues.gender).trim() : undefined,
-        bio: formValues.bio != null ? String(formValues.bio) : undefined,
-        languages: languagesArr,
-        social_links: socialLinksObj,
-        price_per_min_chat:
-          formValues.price_per_min_chat !== "" ? String(formValues.price_per_min_chat) : undefined,
-        price_per_min_audio:
-          formValues.price_per_min_audio !== "" ? String(formValues.price_per_min_audio) : undefined,
-        price_per_min_video:
-          formValues.price_per_min_video !== "" ? String(formValues.price_per_min_video) : undefined,
-        status: formValues.status !== "" ? String(formValues.status) : undefined,
-      };
-
-      // Clean undefined keys (keeps payload neat for backend)
-      Object.keys(jsonPayload).forEach((k) => {
-        if (jsonPayload[k] === undefined) delete jsonPayload[k];
-      });
+      const fd = buildInfluencerFormData(formValues, { isEdit: Boolean(editData?.id) });
+      const desiredStatusRaw = String(formValues.status || "").trim();
 
       if (editData?.id) {
         if (!influencerId) throw new Error("Missing influencer_id");
-        if (hasFileUpload) {
-          const fd = buildInfluencerFormData(formValues, { isEdit: true });
-          await patchData(`/influencers/${influencerId}/`, fd, "Influencer");
-        } else {
-          await patchData(`/influencers/${influencerId}/`, jsonPayload, "Influencer");
+        try {
+          const res = await patchData(`/influencers/pass/${influencerId}/`, fd, "Influencer");
+          if (desiredStatusRaw && (res?.status == null || String(res.status).trim() === "")) {
+            alert(
+              "Update succeeded but server did not save status (still null). Backend must allow updating the status field."
+            );
+          }
+        } catch (e1) {
+          const res = await patchData(`/influencers/${influencerId}/`, fd, "Influencer");
+          if (desiredStatusRaw && (res?.status == null || String(res.status).trim() === "")) {
+            alert(
+              "Update succeeded but server did not save status (still null). Backend must allow updating the status field."
+            );
+          }
         }
       } else {
         if (!influencerId) throw new Error("influencer_id is required");
-        if (hasFileUpload) {
-          const fd = buildInfluencerFormData(formValues, { isEdit: false });
-          await postData("/influencers/", fd, "Influencer");
-        } else {
-          await postData("/influencers/", jsonPayload, "Influencer");
+        const res = await postData("/influencers/", fd, "Influencer");
+        if (desiredStatusRaw && (res?.status == null || String(res.status).trim() === "")) {
+          alert(
+            "Create succeeded but server did not save status (still null). Backend must allow updating the status field."
+          );
         }
       }
 
@@ -524,7 +513,15 @@ export default function Influencers() {
     { label: "Price/Min Chat", name: "price_per_min_chat", type: "text" },
     { label: "Price/Min Audio", name: "price_per_min_audio", type: "text" },
     { label: "Price/Min Video", name: "price_per_min_video", type: "text" },
-    { label: "Status", name: "status", type: "text" },
+    {
+      label: "Status",
+      name: "status",
+      type: "select",
+      options: [
+        { value: "approved", label: "Approved" },
+        { value: "rejected", label: "Reject" },
+      ],
+    },
     { label: "Image", name: "image", type: "image" },
     { label: "Verification Video", name: "verification_video", type: "file", accept: "video/*" },
   ];
