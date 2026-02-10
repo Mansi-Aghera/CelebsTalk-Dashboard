@@ -90,6 +90,8 @@ export default function Form({
                 onChange={handleChange}
                 placeholder={field.placeholder}
                 required={field.required}
+                readOnly={field.readOnly}
+                disabled={field.disabled}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
               />
             )}

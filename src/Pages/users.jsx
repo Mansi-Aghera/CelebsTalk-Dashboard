@@ -18,6 +18,7 @@ export default function Users() {
   const [editData, setEditData] = useState(null);
 
   const pageSize = 10;
+  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://celebstalks.pythonanywhere.com";
 
   useEffect(() => {
     setUsers(fetchedData.users || []);
@@ -38,8 +39,8 @@ export default function Users() {
   const pageCount = Math.ceil(filtered.length / pageSize);
   const current = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  const handleDelete = async (id) => {
-    const identifier = id;
+  const handleDelete = async (row) => {
+    const identifier = row?.user_id ?? row?.mobile ?? row?.email ?? row?.id;
     const encodedId = encodeURIComponent(String(identifier ?? "").trim());
     if (!window.confirm("Delete this user?")) return;
     try {
@@ -77,26 +78,32 @@ export default function Users() {
     const normalizeDobForInput = (value) => {
       if (!value) return "";
       if (typeof value !== "string") return "";
-
-      // API format expected: DD-MM-YYYY
+      const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoMatch) {
+        const [, yyyy, mm, dd] = isoMatch;
+        return `${yyyy}-${mm}-${dd}`;
+      }
       const m = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
       if (m) {
         const [, dd, mm, yyyy] = m;
         return `${yyyy}-${mm}-${dd}`;
       }
-
       return value;
     };
 
     setEditData({
       id: row.id,
-      user_id: row.user_id || row.email || row.id,
       full_name: row.full_name || "",
-      email: row.email || row.user_id || "",
+      email: row.email || "",
+      user_id: row.user_id || row.mobile || row.email || "",
       mobile: row.mobile || "",
       gender: row.gender || "",
       date_of_birth: normalizeDobForInput(row.date_of_birth),
-      image: null,
+      image: row.image
+        ? String(row.image).startsWith("http")
+          ? String(row.image)
+          : STATIC_URL + String(row.image)
+        : "",
       is_active: row.is_active ? "Active" : "Inactive",
       is_staff: row.is_staff ? "Yes" : "No",
     });
@@ -107,14 +114,6 @@ export default function Users() {
     const normalizeDobForApi = (value) => {
       if (!value) return "";
       if (typeof value !== "string") return "";
-
-      // HTML date input: YYYY-MM-DD -> API: DD-MM-YYYY
-      const m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (m) {
-        const [, yyyy, mm, dd] = m;
-        return `${dd}-${mm}-${yyyy}`;
-      }
-
       return value;
     };
 
@@ -122,7 +121,8 @@ export default function Users() {
     fd.append("full_name", (formValues.full_name || "").trim());
     const email = (formValues.email || "").trim();
     fd.append("email", email);
-    fd.append("user_id", email);
+    const userId = String(formValues.user_id || formValues.mobile || formValues.email || "").trim();
+    if (userId) fd.append("user_id", userId);
     fd.append("mobile", (formValues.mobile || "").trim());
     fd.append("gender", formValues.gender || "");
     fd.append("date_of_birth", normalizeDobForApi((formValues.date_of_birth || "").trim()));
@@ -134,9 +134,12 @@ export default function Users() {
     }
 
     try {
-      const identifier = editData?.id ?? editData?.user_id ?? editData?.email;
-      const encodedId = encodeURIComponent(String(identifier ?? "").trim());
-      if (identifier) {
+      const isEdit = Boolean(editData?.id || editData?.user_id);
+      if (isEdit) {
+        const identifier = String(editData?.user_id || editData?.mobile || editData?.email || editData?.id || "").trim();
+        const encodedId = encodeURIComponent(identifier);
+        if (!identifier) throw new Error("Missing user_id for update");
+
         try {
           await patchData(`/user/${encodedId}/`, fd, "User");
         } catch (e1) {
@@ -149,11 +152,7 @@ export default function Users() {
               try {
                 await putData(`/user/${encodedId}/`, fd, "User");
               } catch (e4) {
-                try {
-                  await putData(`/user/${encodedId}`, fd, "User");
-                } catch (e5) {
-                  await putData(`/user/pass/${encodedId}/`, fd, "User");
-                }
+                await putData(`/user/${encodedId}`, fd, "User");
               }
             }
           }
@@ -171,9 +170,9 @@ export default function Users() {
     }
   };
 
-  const fields = [
+  const baseFields = [
     { label: "Full Name", name: "full_name", type: "text", required: true },
-    { label: "Email", name: "email", type: "text", required: true },
+    { label: "Email", name: "email", type: "text", required: false },
     { label: "Mobile", name: "mobile", type: "text", required: true },
     {
       label: "Gender",
@@ -199,9 +198,17 @@ export default function Users() {
       required: true,
     },
   ];
+  const fields = editData?.id
+    ? [
+        { label: "User ID", name: "user_id", type: "text", required: true, readOnly: true },
+        ...baseFields,
+      ]
+    : baseFields;
 
   const columns = [
     { label: "Name", key: "full_name", type: "text" },
+    { label: "User ID", key: "user_id", type: "text" },
+    { label: "DB ID", key: "id", type: "text" },
     {
       label: "Email",
       key: "email",
@@ -284,7 +291,7 @@ export default function Users() {
               />
               <TrashIcon
                 className="h-5 w-5 text-red-600 hover:text-red-800 cursor-pointer transition"
-                onClick={() => handleDelete(row.id)}
+                onClick={() => handleDelete(row)}
               />
             </div>
           )}

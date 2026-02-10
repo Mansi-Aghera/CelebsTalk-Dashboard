@@ -338,14 +338,14 @@ export default function Influencers() {
   };
 
   const handleDelete = async (row) => {
-    const influencerId = row?.influencer_id;
+    const influencerId = String(row?.influencer_id || "").trim();
     if (!influencerId) return;
 
     if (!window.confirm("Delete this influencer?")) return;
     try {
-      await deleteData(`/influencers/pass/${influencerId}/`);
+      await deleteData(`/influencers/${encodeURIComponent(influencerId)}/`);
     } catch (e1) {
-      await deleteData(`/influencers/${influencerId}/`);
+      await deleteData(`/influencers/pass/${encodeURIComponent(influencerId)}/`);
     }
     await getServicesData("influencers");
   };
@@ -355,14 +355,19 @@ export default function Influencers() {
     const nextStatus = String(nextStatusRaw || "").trim();
     if (!influencerId || !nextStatus) return;
 
+    if (nextStatus === "approved" && !row?.verification_video) {
+      alert("Upload verification video first, then you can approve.");
+      return;
+    }
+
     try {
       const fd = new FormData();
       fd.append("status", nextStatus);
 
       try {
-        await patchData(`/influencers/pass/${influencerId}/`, fd, "Influencer");
+        await patchData(`/influencers/${encodeURIComponent(influencerId)}/`, fd, "Influencer");
       } catch (e1) {
-        await patchData(`/influencers/${influencerId}/`, fd, "Influencer");
+        await patchData(`/influencers/pass/${encodeURIComponent(influencerId)}/`, fd, "Influencer");
       }
 
       await getServicesData("influencers");
@@ -470,17 +475,35 @@ export default function Influencers() {
       const fd = buildInfluencerFormData(formValues, { isEdit: Boolean(editData?.id) });
       const desiredStatusRaw = String(formValues.status || "").trim();
 
+      const desiredStatusNormalized =
+        desiredStatusRaw === "Approved" || desiredStatusRaw === "approved"
+          ? "approved"
+          : desiredStatusRaw === "Pending" || desiredStatusRaw === "pending"
+            ? "pending"
+          : desiredStatusRaw === "Reject" || desiredStatusRaw === "Rejected" || desiredStatusRaw === "rejected"
+            ? "rejected"
+            : desiredStatusRaw;
+
+      if (desiredStatusNormalized === "approved") {
+        const hasExistingVerificationVideo = Boolean(editData?.verification_video);
+        const hasNewVerificationVideo = formValues?.verification_video instanceof File;
+        if (!hasExistingVerificationVideo && !hasNewVerificationVideo) {
+          alert("Upload verification video first, then you can approve.");
+          return;
+        }
+      }
+
       if (editData?.id) {
         if (!influencerId) throw new Error("Missing influencer_id");
         try {
-          const res = await patchData(`/influencers/pass/${influencerId}/`, fd, "Influencer");
+          const res = await patchData(`/influencers/${encodeURIComponent(influencerId)}/`, fd, "Influencer");
           if (desiredStatusRaw && (res?.status == null || String(res.status).trim() === "")) {
             alert(
               "Update succeeded but server did not save status (still null). Backend must allow updating the status field."
             );
           }
         } catch (e1) {
-          const res = await patchData(`/influencers/${influencerId}/`, fd, "Influencer");
+          const res = await patchData(`/influencers/pass/${encodeURIComponent(influencerId)}/`, fd, "Influencer");
           if (desiredStatusRaw && (res?.status == null || String(res.status).trim() === "")) {
             alert(
               "Update succeeded but server did not save status (still null). Backend must allow updating the status field."

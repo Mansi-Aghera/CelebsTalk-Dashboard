@@ -7,6 +7,7 @@ export default function UserDetail() {
   const { id } = useParams();
   const numericId = Number(id);
   const { fetchedData, baseUrl } = useAppContext();
+  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://celebstalks.pythonanywhere.com";
 
   const [categoriesData, setCategoriesData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,13 @@ export default function UserDetail() {
           <div className="bg-white rounded-xl border border-gray-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <h2 className="text-lg font-semibold mb-2">Basic Info</h2>
+              {user.image ? (
+                <img
+                  src={String(user.image).startsWith("http") ? String(user.image) : STATIC_URL + String(user.image)}
+                  alt={user.full_name || "user"}
+                  className="h-32 w-32 object-cover rounded-full border"
+                />
+              ) : null}
               <p><span className="font-medium">Full Name:</span> {user.full_name}</p>
               <p><span className="font-medium">Email:</span> {user.email}</p>
               <p><span className="font-medium">Mobile:</span> {user.mobile}</p>

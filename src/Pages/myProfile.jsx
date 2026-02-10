@@ -35,17 +35,17 @@ export default function MyProfile() {
         </h1>
       </div>
 
-      {!admin ? (
+      {!admin ? ( 
         <div className="max-w-xl mx-auto bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
           <p className="text-gray-700 font-medium">Profile data not found.</p>
           <p className="text-gray-500 text-sm mt-1">
-            Please login again to load your profile.
+            Please login again to load your profile.  
           </p>
           <button
             type="button"
             onClick={() => navigate("/", { replace: true })}
             className="mt-4 text-sm px-4 py-2 rounded-md bg-[#ff237c] text-white hover:bg-[#ea028b]"
-          >
+          > 
             Go to Login
           </button>
         </div>
