@@ -6,10 +6,14 @@ import { Navigate, Outlet } from "react-router-dom";
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  const [baseUrl] = useState(
-    import.meta?.env?.DEV ? "/api" : "https://celebstalks.pythonanywhere.com"
-  );
-
+  // const [baseUrl] = useState(
+  //   import.meta?.env?.DEV ? "/api" : "https://celebstalks.pythonanywhere.com"
+  // );
+const [baseUrl] = useState(
+  import.meta?.env?.DEV
+    ? "https://celebstalks.pythonanywhere.com"
+    : "https://celebstalks.pythonanywhere.com"
+);
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -69,10 +73,6 @@ export const AppProvider = ({ children }) => {
       const headers = {};
       setAuthHeader(headers, scheme);
 
-      const csrfToken = getCookie("csrftoken");
-      if (csrfToken) {
-        headers["X-CSRFToken"] = csrfToken;
-      }
       if (!isFormData) {
         headers["Content-Type"] = "application/json";
       }
@@ -160,11 +160,6 @@ export const AppProvider = ({ children }) => {
       const headers = {};
       setAuthHeader(headers, scheme);
 
-      const csrfToken = getCookie("csrftoken");
-      if (csrfToken) {
-        headers["X-CSRFToken"] = csrfToken;
-      }
-
       const res = await fetch(`${baseUrl}${endpoint}`, {
         method: "DELETE",
         headers,
@@ -220,11 +215,6 @@ export const AppProvider = ({ children }) => {
     const doFetch = async (scheme, allowRetry) => {
       const headers = {};
       setAuthHeader(headers, scheme);
-
-      const csrfToken = getCookie("csrftoken");
-      if (csrfToken) {
-        headers["X-CSRFToken"] = csrfToken;
-      }
 
       const res = await fetch(`${baseUrl}${endPoint}`, {
         method: "GET",
