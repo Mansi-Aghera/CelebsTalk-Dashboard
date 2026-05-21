@@ -7,7 +7,7 @@ export default function UserDetail() {
   const { id } = useParams();
   const numericId = Number(id);
   const { fetchedData, baseUrl } = useAppContext();
-  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://celebstalks.pythonanywhere.com";
+  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://adminapi.celebstalk.in";
 
   const [categoriesData, setCategoriesData] = useState([]);
   const [loading, setLoading] = useState(true);

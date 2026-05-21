@@ -7,12 +7,12 @@ const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
   // const [baseUrl] = useState(
-  //   import.meta?.env?.DEV ? "/api" : "https://celebstalks.pythonanywhere.com"
+  //   import.meta?.env?.DEV ? "/api" : "https://adminapi.celebstalk.in"
   // );
 const [baseUrl] = useState(
   import.meta?.env?.DEV
-    ? "https://celebstalks.pythonanywhere.com"
-    : "https://celebstalks.pythonanywhere.com"
+    ? "https://adminapi.celebstalk.in"
+    : "https://adminapi.celebstalk.in"
 );
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;

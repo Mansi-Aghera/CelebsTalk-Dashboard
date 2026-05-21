@@ -18,7 +18,7 @@ export default function Categories() {
   const warnedMissingExpertiseRef = useRef(new Set());
 
   const pageSize = 10;
-  const STATIC_URL = "https://celebstalks.pythonanywhere.com";
+  const STATIC_URL = "https://adminapi.celebstalk.in";
 
   useEffect(() => {
     setCategories(fetchedData.categories || []);

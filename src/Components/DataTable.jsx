@@ -26,7 +26,7 @@ export default function DataTable({ columns, data, actions }) {
                       ? col.render(row)
                       : col.type === "image" && row[col.key] ? (
                         <img
-                          src={`https://celebstalks.pythonanywhere.com/${row[col.key]}`}
+                          src={`https://adminapi.celebstalk.in/${row[col.key]}`}
                           alt=""
                           className="h-12 w-16 object-cover rounded-md"
                         />

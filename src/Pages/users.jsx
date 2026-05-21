@@ -18,7 +18,7 @@ export default function Users() {
   const [editData, setEditData] = useState(null);
 
   const pageSize = 10;
-  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://celebstalks.pythonanywhere.com";
+  const STATIC_URL = import.meta?.env?.DEV ? "http://127.0.0.1:8000" : "https://adminapi.celebstalk.in";
 
   useEffect(() => {
     setUsers(fetchedData.users || []);
