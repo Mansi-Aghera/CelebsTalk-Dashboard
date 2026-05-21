@@ -18,7 +18,7 @@ export default function SponsoredContent() {
   const [editData, setEditData] = useState(null);
 
   const pageSize = 10;
-  const STATIC_URL = "https://celebstalks.pythonanywhere.com";
+  const baseUrl = "https://celebstalks.pythonanywhere.com";
 
   useEffect(() => {
     setItems(fetchedData.sponsoredContent || []);
