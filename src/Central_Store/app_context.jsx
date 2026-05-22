@@ -33,6 +33,7 @@ const [baseUrl] = useState(
     services: [],
     expertise: [],
     withdrawals: [],
+    userQueries: [],
   });
 
   const inflightFetchRef = useRef({});
@@ -281,6 +282,7 @@ const [baseUrl] = useState(
         services: "/services/",
         expertise: "/expertise/",
         withdrawals: "/withdrawals/",
+        userQueries: "/user_query/",
       };
 
       const normalizeList = (value) => {

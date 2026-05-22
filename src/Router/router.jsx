@@ -17,6 +17,7 @@ import FaqPage from "../Pages/faq.jsx";
 import Services from "../Pages/services.jsx";
 import MyProfile from "../Pages/myProfile.jsx";
 import Expertise from "../Pages/expertise.jsx";
+import UserQueries from "../Pages/userQueries.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ export const router = createBrowserRouter([
           { path: "faqs", element: <FaqPage /> },
           { path: "services", element: <Services /> },
           { path: "expertise", element: <Expertise /> },
+          { path: "user-queries", element: <UserQueries /> },
           { path: "my-profile", element: <MyProfile /> },
         ],
       },

@@ -51,7 +51,7 @@ export default function Sidebar({ isOpen, onClose }) {
       { label: "Reviews", to: "/dashboard/reviews", icon: ClipboardDocumentListIcon },
       { label: "Services", to: "/dashboard/services", icon: ClipboardDocumentListIcon },
       { label: "Expertise", to: "/dashboard/expertise", icon: ClipboardDocumentListIcon },
-     
+      { label: "User Queries", to: "/dashboard/user-queries", icon: ClipboardDocumentListIcon },
       { label: "My Profile", to: "/dashboard/my-profile", icon: UserIcon },
     ],
     []
